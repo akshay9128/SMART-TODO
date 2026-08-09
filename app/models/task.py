@@ -17,3 +17,8 @@ class Task(Base):
         String,
         nullable=False
     )
+
+    completed: Mapped[bool]= mapped_column(
+        default=False,
+        nullable=False
+    )
