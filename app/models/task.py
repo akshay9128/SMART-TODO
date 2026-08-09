@@ -22,3 +22,15 @@ class Task(Base):
         default=False,
         nullable=False
     )
+
+    category:Mapped[str]=mapped_column(
+        String,
+        default="General",
+        nullable=False
+    )
+
+    priority:Mapped[str]=mapped_column(
+        String,
+        default="medium",
+        nullable=False
+    )
