@@ -20,7 +20,8 @@ def create_task(
     db_task=Task(
         title=task.title,
         category=task.category,
-        priority=task.priority
+        priority=task.priority,
+        due_at=task.due_at
     )
     db.add(db_task)
     db.commit()
@@ -100,6 +101,9 @@ def update_task(
 
     if task_data.priority is not None:
         task.priority=task_data.priority
+
+    if task_data.due_at is not None:
+        task.due_at=task_data.due_at
 
     db.commit()
     db.refresh(task)

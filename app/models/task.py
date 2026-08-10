@@ -1,4 +1,5 @@
-from sqlalchemy import String, Integer
+from datetime import datetime
+from sqlalchemy import String, Integer,DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base import Base
@@ -32,5 +33,14 @@ class Task(Base):
     priority:Mapped[str]=mapped_column(
         String,
         default="medium",
+        nullable=False
+    )
+
+    due_at:Mapped[datetime | None]=mapped_column(
+        DateTime,
+        nullable=True
+    )
+    reminded:Mapped[bool]=mapped_column(
+        default=False,
         nullable=False
     )

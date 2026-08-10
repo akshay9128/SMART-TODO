@@ -2,14 +2,26 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.logger import logger
-from app.database.create_db import create_databse
+from app.database.create_db import create_database
 from app.routers.task import router as task_router
+from app.scheduler import scheduler
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app:FastAPI):
+    scheduler.start()
+    yield
+    scheduler.shutdown()
+    
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
+    lifespan=lifespan,
 )
 
-create_databse()
+
+
+create_database()
 app.include_router(task_router)
 
 @app.get("/")

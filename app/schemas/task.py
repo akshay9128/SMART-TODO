@@ -1,5 +1,6 @@
 from pydantic import BaseModel,Field,ConfigDict
 from typing import Literal
+from datetime import datetime
 
 class TaskCreate(BaseModel):
     title:str=Field(
@@ -14,6 +15,7 @@ class TaskCreate(BaseModel):
             max_length=50,
             description="Category Of The Task")
     priority: Literal["low","medium","high"]="medium"
+    due_at:datetime | None=None
 
 class TaskUpdate(BaseModel):
     title:str | None=None
@@ -24,6 +26,7 @@ class TaskUpdate(BaseModel):
         max_length=50
     )
     priority: Literal["low","medium","high"]="medium"
+    due_at: datetime | None=None
 
 class TaskResponse(BaseModel):
     id:int
@@ -31,5 +34,6 @@ class TaskResponse(BaseModel):
     completed:bool
     category:str
     priority:str
-
+    due_at:datetime | None
+    
     model_config=ConfigDict(from_attributes=True)
