@@ -1,8 +1,9 @@
-from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 from app.database.session import SessionLocal
 from app.models.task import Task
+from app.services.reminder_services import send_reminder
 scheduler=BackgroundScheduler()
 
 def check_due_tasks():
@@ -19,10 +20,7 @@ def check_due_tasks():
             .all()
         )
         for task in tasks:
-            print(
-                f"Due task:{task.title}"
-                f"(id={task.id},priority={task.priority})"
-            )
+            send_reminder(task,db)
             task.reminded=True
         db.commit()
     finally:
