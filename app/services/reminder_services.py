@@ -19,6 +19,7 @@ def send_reminder(task, db):
     )
 
     notification = Notification(
+        user_id=task.user_id,
         task_id=task.id,
         message=message,
         is_read=False

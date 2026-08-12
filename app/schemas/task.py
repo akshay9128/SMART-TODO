@@ -30,6 +30,7 @@ class TaskUpdate(BaseModel):
 
 class TaskResponse(BaseModel):
     id:int
+    user_id:int
     title:str
     completed:bool
     category:str

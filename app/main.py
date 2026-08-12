@@ -4,9 +4,10 @@ from app.core.config import settings
 from app.core.logger import logger
 from app.database.create_db import create_database
 from app.routers.task import router as task_router
-from app.routers import notification
+from app.routers import notification,user
 from app.scheduler import scheduler
 from contextlib import asynccontextmanager
+
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
@@ -25,6 +26,8 @@ app = FastAPI(
 create_database()
 app.include_router(task_router)
 app.include_router(notification.router)
+app.include_router(user.router)
+
 
 @app.get("/")
 def home():

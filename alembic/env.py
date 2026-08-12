@@ -7,6 +7,7 @@ from alembic import context
 from app.database.base import Base
 from app.models.task import Task
 from app.models.notification import Notification
+from app.models.user import User
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

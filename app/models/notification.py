@@ -4,6 +4,7 @@ from sqlalchemy import Boolean,DateTime,ForeignKey,Integer,String
 from sqlalchemy.orm import Mapped,mapped_column
 
 from app.database.base import Base
+from app.models.task import Task
 
 class Notification(Base):
     __tablename__="notification"
@@ -13,6 +14,11 @@ class Notification(Base):
             primary_key=True,
             index=True
         )
+
+    user_id:Mapped[int]=mapped_column(
+        ForeignKey("users.id"),
+        nullable=True
+    )
 
     task_id:Mapped[int]=mapped_column(
         ForeignKey("tasks.id"),
