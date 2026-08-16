@@ -27,3 +27,12 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Uploaded audio
+uploads/
+
+#testfiles
+test_agent_service.py
+test_data_parser.py
+testmicr.py
+test_agent.py
