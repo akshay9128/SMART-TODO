@@ -45,6 +45,22 @@ class Task(Base):
         DateTime,
         nullable=True
     )
+
+    reminder_at:Mapped[datetime|None]=mapped_column(
+        DateTime,
+        nullable=True
+    )
+
+    recurrence_type:Mapped[str|None]=mapped_column(
+        String,
+        nullable=True
+    )
+
+    recurrence_value:Mapped[str|None]=mapped_column(
+        String,
+        nullable=True
+    )
+    
     reminded:Mapped[bool]=mapped_column(
         default=False,
         nullable=False

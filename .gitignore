@@ -30,9 +30,12 @@ Thumbs.db
 
 # Uploaded audio
 uploads/
+*.wav
 
 #testfiles
 test_agent_service.py
 test_data_parser.py
 testmicr.py
 test_agent.py
+todo_backup_before_recurrence.db
+todo_backup.db

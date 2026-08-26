@@ -5,8 +5,8 @@ import time
 
 BASE_URL = "http://127.0.0.1:8000"
 
-USERNAME = "user1"
-PASSWORD = "123456"
+USERNAME = "testuser"
+PASSWORD = "1234567890"
 
 DEVICE_INDEX = 1
 

@@ -1,13 +1,23 @@
+import re
 from sqlalchemy.orm import Session
-
+from datetime import datetime,timedelta
 from app.models.task import Task
 from app.models.user import User
 from app.agents.task_agent import TaskAgent
 from app.utils.date_parser import parse_due_date
+from app.services.memory_service import get_user_memory
+from app.services.memory_service import get_memory_by_key
+from app.utils.recurrence_parser import parse_recurrence
 
 
 agent = TaskAgent()
 
+def get_user_tasks(db, current_user):
+    return (
+        db.query(Task)
+        .filter(Task.user_id == current_user.id)
+        .all()
+    )
 
 def process_task_request(
     text: str,
@@ -23,11 +33,108 @@ def process_task_request(
     # ============================================================
 
     if result["intent"] == "create_task":
+        recurrence_type,recurrence_value=parse_recurrence(text)
+        memory = get_user_memory(
+            key="preferred_reminder_time",
+            db=db,
+            current_user=current_user
+        )
+        
+        if memory:
+                print(
+                "DEBUG USER MEMORY:",
+                memory.key,
+                memory.value
+            )
+        else:
+                print("DEBUG USER MEMORY: None")
+
+        if recurrence_type == "daily":
+            result["task_title"] = re.sub(
+        r"\b(every\s*day|everyday|daily)\b",
+        "",
+        result["task_title"],
+        flags=re.IGNORECASE
+    )
+
+        elif recurrence_type == "weekly":
+            result["task_title"] = re.sub(
+        r"\bevery\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b",
+        "",
+        result["task_title"],
+        flags=re.IGNORECASE
+    )
+
+        result["task_title"] = result["task_title"].strip(" .")
+
+        if recurrence_type == "daily" and not result["due_date"]:
+            result["due_date"] = "today"
+
+        print("DEBUG due_date:", result["due_date"])
+        print("DEBUG due_time:", result["due_time"])
 
         due_at = parse_due_date(
             result["due_date"],
             result["due_time"]
         )
+        existing_tasks=get_user_tasks(
+            db=db,
+            current_user=current_user
+        )
+        print("DEBUG EXISTING TASKS:")
+
+        for existing_task in existing_tasks:
+            print(
+            existing_task.id,
+            existing_task.title,
+            existing_task.due_at
+            )
+        print("DEBUG>>>CONFLICT CHECK REACHED<<<")
+        conflicting_tasks = []
+        if due_at:
+            for existing_task in existing_tasks:
+                if(
+                    existing_task.due_at
+            and existing_task.due_at == due_at
+            and not existing_task.completed
+                ):
+                    conflicting_tasks.append(existing_task)
+        print(
+    "DEBUG CONFLICTS:",
+    [
+        (task.id, task.title, task.due_at)
+        for task in conflicting_tasks
+    ]
+)
+
+        reminder_memory = get_memory_by_key(
+            key="preferred_reminder_time",
+            db=db,
+            current_user=current_user
+        )
+        reminder_at=None
+        if due_at:
+            if reminder_memory:
+                preferred_time = datetime.strptime(
+            reminder_memory.value,
+            "%H:%M"
+        ).time()
+
+                preferred_reminder = datetime.combine(
+            due_at.date(),
+            preferred_time
+        )
+
+                if preferred_reminder < due_at:
+                    reminder_at = preferred_reminder
+                else:
+                    reminder_at = due_at - timedelta(minutes=30)
+
+            else:
+                reminder_at = due_at - timedelta(minutes=30)
+        # preferred_reminder_time = None
+        # if reminder_memory:
+        #     preferred_reminder_time = reminder_memory.value
 
         task = Task(
             user_id=current_user.id,
@@ -35,6 +142,9 @@ def process_task_request(
             category=result["category"],
             priority=result["priority"],
             due_at=due_at,
+            reminder_at=reminder_at,
+            recurrence_type=recurrence_type,
+            recurrence_value=recurrence_value,
         )
 
         db.add(task)
@@ -45,7 +155,16 @@ def process_task_request(
         message = f'🎉 Done! I created the task "{task.title}"'
 
         if task.due_at:
-            message += f' for {task.due_at.strftime("%B %d at %I:%M %p").lstrip("0")}'
+            message += (
+                f' for '
+                f'{task.due_at.strftime("%B %d at %I:%M %p").lstrip("0")}')
+        if task.reminder_at:
+            message+=(f'.Your reminder is set for '
+                      f'{task.reminder_at.strftime("%I:%M %p").lstrip("0")}')
+
+        # if preferred_reminder_time:
+        #     message += f'. Your preferred reminder time is {preferred_reminder_time}'
+
 
         message += "."
 
@@ -308,3 +427,5 @@ def process_task_request(
             "list, or delete a task."
         )
     }
+
+    
